@@ -109,29 +109,7 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Col 3 */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-emerald-300">
-              {t.footerExtraLinks}
-            </h3>
-            <ul className="space-y-2 text-sm text-emerald-200/80">
-              <li>
-                <Link href="/#articles" className="hover:text-white transition-colors">
-                  {t.articles}
-                </Link>
-              </li>
-              <li>
-                <Link href="/#about-us" className="hover:text-white transition-colors">
-                  {t.aboutUs}
-                </Link>
-              </li>
-              <li>
-                <Link href="/#contact" className="hover:text-white transition-colors">
-                  {t.contact}
-                </Link>
-              </li>
-            </ul>
-          </div>
+
         </div>
 
         {/* Policies & Bottom border */}
