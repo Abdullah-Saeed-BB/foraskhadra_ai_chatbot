@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routers import agent_router
+from routers import agent_router, opportunities
 
 app = FastAPI(
     title="ForasKhadra AI API",
@@ -8,6 +8,7 @@ app = FastAPI(
 )
 
 app.include_router(agent_router.router)
+app.include_router(opportunities.router)
 
 @app.get("/")
 def root():

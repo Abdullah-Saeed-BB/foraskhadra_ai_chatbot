@@ -41,6 +41,8 @@ from datetime import datetime
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import sessionmaker
 # pyrefly: ignore [missing-import]
+from sessions import engine, SessionLocal
+# pyrefly: ignore [missing-import]
 from models import Base, Opportunity  # Assuming you have an Opportunity model
 from dotenv import load_dotenv
 
@@ -51,8 +53,6 @@ JSON_FILE_PATH = "./data/opportunities.json"
 
 print(DATABASE_URL)
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-SessionLocal = sessionmaker(bind=engine)
 
 def database_exists():
     """Check if database exists by trying to connect and inspecting tables."""
