@@ -179,7 +179,7 @@ export const Header: React.FC = () => {
           <Link
             href="/chatbot"
             onClick={() => setMobileMenuOpen(false)}
-            className="block rounded-lg px-4 py-2 hover:bg-emerald-50 text-[15px] font-medium text-primary flex items-center gap-2"
+            className="rounded-lg px-4 py-2 hover:bg-emerald-50 text-[15px] font-medium text-primary flex items-center gap-2"
           >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
