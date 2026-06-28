@@ -1,5 +1,5 @@
 from db.schemas import AgentRequest, AgentResponse
-from agent.engine import process_query
+from agent.chatbot import process_query
 
 def handle_agent_query(request: AgentRequest) -> AgentResponse:
     """

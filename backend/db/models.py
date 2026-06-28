@@ -43,18 +43,28 @@ class Opportunity(Base):
     __tablename__ = "opportunities"
 
     id: Mapped[int] = mapped_column(
-        Integer,
+        String(8),
         primary_key=True,
-        autoincrement=True,
     )
 
-    title: Mapped[str] = mapped_column(
+    title_en: Mapped[str] = mapped_column(
         String(255),
         nullable=False,
         index=True,
     )
 
-    description: Mapped[str] = mapped_column(
+    title_ar: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+        index=True,
+    )
+
+    description_en: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+
+    description_ar: Mapped[str] = mapped_column(
         Text,
         nullable=False,
     )
@@ -65,25 +75,49 @@ class Opportunity(Base):
         index=True,
     )
 
-    organization: Mapped[str] = mapped_column(
+    organization_en: Mapped[str] = mapped_column(
         String(255),
         nullable=False,
     )
 
-    location: Mapped[str] = mapped_column(
+    organization_ar: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    location_en: Mapped[str] = mapped_column(
         String(255),
         nullable=True,
         index=True,
     )
     # Format: "country, city" or "remote"
 
-    requirements: Mapped[str | None] = mapped_column(
+    location_ar: Mapped[str] = mapped_column(
+        String(255),
+        nullable=True,
+        index=True,
+    )
+    # Format: "country, city" or "remote"
+
+    requirements_en: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
     )
     # Save as "requirement 1, requirement 2, requirement 3"
 
-    benefits: Mapped[str | None] = mapped_column(
+    requirements_ar: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+    # Save as "requirement 1, requirement 2, requirement 3"
+
+    benefits_en: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+    # Save as "benefit 1, benefit 2, benefit 3"
+
+    benefits_ar: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
     )
@@ -94,7 +128,13 @@ class Opportunity(Base):
         nullable=False,
     )
 
-    tags: Mapped[str | None] = mapped_column(
+    tags_en: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+    # Save as "tag 1, tag 2, tag 3"
+
+    tags_ar: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
     )

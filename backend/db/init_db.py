@@ -1,40 +1,3 @@
-# import os
-# from sqlalchemy import create_engine, inspect
-# # pyrefly: ignore [missing-import]
-# from models import Base
-# from dotenv import load_dotenv
-
-# load_dotenv()
-
-# DB_DIR = os.path.dirname(os.path.abspath(__file__))
-# DATABASE_URL = os.getenv("DATABASE_URL")
-
-# engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-
-# def database_exists():
-#     """Check if database exists by trying to connect and inspecting tables."""
-#     try:
-#         inspector = inspect(engine)
-#         tables = inspector.get_table_names()
-#         # If there are tables, database exists
-#         return len(tables) > 0
-#     except Exception as e:
-#         # Connection failed or other error
-#         print(f"Error checking database: {e}")
-#         return False
-
-# def init_db():
-#     """Create database tables based on SQLAlchemy models."""
-#     if database_exists():
-#         print(f"Database already exists with tables at: {DATABASE_URL}")
-#     else:
-#         print(f"Database does not exist or is empty. Creating new database at: {DATABASE_URL}")
-#         Base.metadata.create_all(bind=engine)
-#         print("Database tables created successfully.")
-
-# if __name__ == "__main__":
-#     init_db()
-
 import os
 import json
 from datetime import datetime
@@ -108,15 +71,23 @@ def insert_data_from_json(session, json_file_path):
             
             # Create Opportunity object
             opportunity = Opportunity(
-                title=item.get('title', ''),
-                description=item.get('description', ''),
+                id=item.get('id', ''),
+                title_ar=item.get('title_ar', ''),
+                title_en=item.get('title_en', ''),
+                description_ar=item.get('description_ar', ''),
+                description_en=item.get('description_en', ''),
                 category=item.get('category', ''),
-                organization=item.get('organization', ''),
-                location=item.get('location', ''),
-                requirements=item.get('requirements', ''),
-                benefits=item.get('benefits', ''),
+                organization_ar=item.get('organization_ar', ''),
+                organization_en=item.get('organization_en', ''),
+                location_ar=item.get('location_ar', ''),
+                location_en=item.get('location_en', ''),
+                requirements_ar=item.get('requirements_ar', ''),
+                requirements_en=item.get('requirements_en', ''),
+                benefits_ar=item.get('benefits_ar', ''),
+                benefits_en=item.get('benefits_en', ''),
                 application_url=item.get('application_url', ''),
-                tags=item.get('tags', ''),
+                tags_ar=item.get('tags_ar', ''),
+                tags_en=item.get('tags_en', ''),
                 published_at=published_at,
                 expires_at=expires_at
             )
