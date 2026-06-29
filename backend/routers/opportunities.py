@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from db.sessions import SessionLocal
+from db.sessions import get_db
 from db.models import Opportunity
 from db.schemas import OpportunityResponse, OpportunityListResponse
 
@@ -10,14 +10,6 @@ router = APIRouter(
     prefix="/opportunities",
     tags=["Opportunities"]
 )
-
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.get("/", response_model=OpportunityListResponse)
 def get_opportunities(

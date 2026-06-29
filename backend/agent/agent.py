@@ -14,24 +14,13 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import END, START, StateGraph
 from sqlalchemy import create_engine, text
-from .config import *
 
+from .config import *
+from db.models import OpportunityCategory
 
 # -----------------------------------
 # Defintions
 # -----------------------------------
-
-class CategoriesEnum(str, Enum):
-    JOB="job"
-    INTERNSHIP="internship"
-    FREELANCE="freelance"
-    VOLUNTEERING="volunteering"
-    TRAINING="training"
-    SCHOLARSHIP="scholarship"
-    COMPETITION="competition"
-    HACKATHON="hackathon"
-    FELLOWSHIP="fellowship"
-    EVENT="event"
 
 class AgentState(TypedDict, total=False):
     messages: List[Any]          # conversation messages
@@ -52,7 +41,7 @@ class SearchFilters(BaseModel):
         None, 
         description="The specific city or country mentioned in the query. Leave None if no city or country is mentioned."
     )
-    category: Optional[CategoriesEnum] = Field(
+    category: Optional[OpportunityCategory] = Field(
         None, 
         description="The specific category mentioned in the query. Leave None if no category is mentioned."
     )
@@ -234,7 +223,7 @@ def rag_retriever_node(state: AgentState) -> Dict[str, Any]:
 def db_formatter_node(state: AgentState) -> Dict[str, Any]:
     """
     Format the retrieved opportunities into a warm, natural conversational response based on data and user prompt.
-    Write always "<|DATA|>" on the response so I replace it with the real data.
+    Write always "<|DATA|>" act as data section on the response, so I can replace it with the real data.
     """
     llm = get_main_llm(temp=.4)
 
@@ -271,7 +260,7 @@ def db_formatter_node(state: AgentState) -> Dict[str, Any]:
         "You are a friendly, professional assistant helping users find career and educational opportunities. "
         "Review the retrieved opportunities provided below and answer the user's request in a warm, fluid, human-like paragraph structure. "
         "Do not print a bulleted markdown table or a dry list. Blend the titles and durations naturally into sentences (e.g., 'There are internships in Jeddah, such as the Financial Analysis Internship...'). "
-        "Write always \"<|DATA|>\" where the real data will show up, so I replace is with real data later. " 
+        "Write always \"<|DATA|>\" where the real data section will show up, so I replace is with real data later. " 
         "Keep the tone encouraging, conversational, and directly responsive to their query."
     )
 

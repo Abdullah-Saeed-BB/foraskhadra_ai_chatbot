@@ -42,7 +42,7 @@ class OpportunityCategory(str, Enum):
 class Opportunity(Base):
     __tablename__ = "opportunities"
 
-    id: Mapped[int] = mapped_column(
+    id: Mapped[str] = mapped_column(
         String(8),
         primary_key=True,
     )
