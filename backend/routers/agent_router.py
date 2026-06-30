@@ -26,11 +26,8 @@ async def query_agent(request: ChatRequest, db: Session = Depends(get_db)) -> Ch
 
         opportunities = []
         if result["used_rag"] and result["rag_ids"]:
-            print("*--")
             rows = db.query(Opportunity).where(Opportunity.id.in_(result["rag_ids"])).all()
-            print("RESULT:", rows)
             isEn = result["language"] == "en"
-            print("IS EN:", isEn)
             opportunities = [{
                 "id": row.id,
                 "title": row.title_en if isEn else row.title_ar,
@@ -43,9 +40,6 @@ async def query_agent(request: ChatRequest, db: Session = Depends(get_db)) -> Ch
                 "application_url": row.application_url,
                 "tags": row.tags_en if isEn else row.tags_ar,
             } for row in rows]
-            print("--*")
-
-        print(opportunities)
 
         return ChatResponse(
             response=result["response"],

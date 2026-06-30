@@ -54,7 +54,6 @@ class ChatResponse(BaseModel):
     suggestions: List[str]
     language: str
     used_rag: bool
-    # rag_ids: List[str]
     rag_data: List[DocumentData]
     search_filters: Dict[str, Any]
 
