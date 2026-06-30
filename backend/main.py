@@ -1,5 +1,11 @@
 from fastapi import FastAPI
 from routers import agent_router, opportunities
+from fastapi.middleware.cors import CORSMiddleware
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI(
     title="ForasKhadra AI API",
@@ -9,6 +15,14 @@ app = FastAPI(
 
 app.include_router(agent_router.router)
 app.include_router(opportunities.router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[os.getenv("FRONTEND_URL")],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def root():

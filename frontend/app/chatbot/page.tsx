@@ -39,6 +39,7 @@ export default function ChatbotPage() {
     try {
       // The API URL is loaded from the .env file as requested
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      console.log(apiUrl);
       const response = await fetch(`${apiUrl}/agent/query`, {
         method: "POST",
         headers: {
@@ -52,6 +53,7 @@ export default function ChatbotPage() {
       }
 
       const data = await response.json();
+      console.log(data);
       
       const botMsg: Message = {
         id: Date.now() + 1,
