@@ -25,10 +25,6 @@ async def query_agent(request: ChatRequest, db: Session = Depends(get_db)) -> Ch
         agent = OpportunityChatbotAsync()
         result = await agent.chat(request.message)
 
-        print("\n\nAGENT STATE:\n")
-        print(agent.state)
-        print("\n")
-
         opportunities = []
         if result["used_rag"] and result["rag_ids"]:
             rows = db.query(Opportunity).where(Opportunity.id.in_(result["rag_ids"])).all()

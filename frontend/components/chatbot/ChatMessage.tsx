@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 
-const ChatMessage = ({msg, isRtl}: {msg: Message, isRtl: boolean}) => {
+const ChatMessage = ({msg, isRtl, setInputValue}: {msg: Message, isRtl: boolean, setInputValue: (input: string) => void}) => {
   const isBot = msg.sender === "bot";
   
   return (
@@ -16,7 +16,7 @@ const ChatMessage = ({msg, isRtl}: {msg: Message, isRtl: boolean}) => {
     >
       <div className={`flex flex-col gap-2 ${isBot ? 'w-full' : 'max-w-[85%]'}`}>
         {isBot ? (
-          <BotMessage msg={msg} isRtl={isRtl}/>
+          <BotMessage msg={msg} isRtl={isRtl} setInputValue={setInputValue}/>
         ) : (
           <HumanMessage content={msg.text} />
         )}
@@ -35,7 +35,7 @@ const HumanMessage = ({content}: {content: string}) => {
   )
 }
 
-const BotMessage = ({msg, isRtl}: {msg: Message, isRtl: boolean}) => {
+const BotMessage = ({msg, isRtl, setInputValue}: {msg: Message, isRtl: boolean, setInputValue: (input: string) => void}) => {
   let content = msg.text.split("<|DATA|>")
   content = content.flatMap((element, index) => 
       index === 0 ? element : ["<|DATA|>", element]
@@ -62,10 +62,20 @@ const BotMessage = ({msg, isRtl}: {msg: Message, isRtl: boolean}) => {
           </ReactMarkdown>
         </div>;
       })}
-      <hr/>
+      <div className="mt-4 mb-10">
+        {msg.suggestions && msg.suggestions.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <span className="text-sm text-foreground/70">{isRtl ? "اقتراحات:" : "Suggestions:"}</span>
+            {msg.suggestions.map((suggestion, idx) => (
+              <button key={idx} onClick={() => setInputValue(suggestion)} className="text-sm text-slate-50 py-1 px-3 w-fit rounded-2xl shadow-sm bg-primary/80 hover:bg-primary/70">{suggestion}</button>
+            ))}
+          </div>
+        )}
+      </div>
+      {/* <hr/>
       <code>
         {JSON.stringify(msg, null, 2)}
-      </code>
+      </code> */}
     </div>
   )
 }

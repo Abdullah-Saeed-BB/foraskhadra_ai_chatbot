@@ -56,6 +56,7 @@ export default function ChatbotPage() {
         text: data.response || (isRtl ? "عذراً، لم أتمكن من معالجة طلبك." : "Sorry, I couldn't process your request."),
         timestamp: new Date(),
         ragData: data.used_rag ? data.rag_data : undefined,
+        suggestions: data.suggestions,
       };
       setMessages((prev) => [...prev, botMsg]);
     } catch (error) {
@@ -120,7 +121,7 @@ export default function ChatbotPage() {
           </div>
 
           {/* Messages list */}
-          <div className="flex-1 min-h-100 p-4 overflow-y-auto space-y-6 bg-radial from-transparent to-emerald-50/5 dark:to-emerald-950/5 relative">
+          <div className="flex-1 min-h-100 max-h-[60vh] p-4 overflow-y-auto space-y-6 bg-radial from-transparent to-emerald-50/5 dark:to-emerald-950/5 relative">
             
             {messages.length === 0 && (
               <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center h-full max-h-[80%] my-auto">
@@ -139,7 +140,7 @@ export default function ChatbotPage() {
             )}
 
             {messages.map((msg) => (
-              <ChatMessage key={msg.id} msg={msg} isRtl={isRtl} />
+              <ChatMessage key={msg.id} msg={msg} isRtl={isRtl} setInputValue={setInputValue} />
             ))}
 
             {isTyping && (

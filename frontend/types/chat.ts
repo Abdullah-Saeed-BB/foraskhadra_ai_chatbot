@@ -19,4 +19,5 @@ export interface Message {
   text: string;
   timestamp: Date;
   ragData?: DocumentData[];
+  suggestions?: string[];
 }
