@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cairo, Inter } from "next/font/google";
 import { LanguageProvider } from "./context/language-context";
 import "./globals.css";
+import "highlight.js/styles/github.css";
 
 const cairo = Cairo({
   variable: "--font-cairo",

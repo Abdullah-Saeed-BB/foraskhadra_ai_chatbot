@@ -17,11 +17,6 @@ export default function ChatbotPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Scroll to bottom on new message
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
-
   const handleSendMessage = async (text: string) => {
     if (!text.trim()) return;
 
@@ -167,15 +162,17 @@ export default function ChatbotPage() {
                 e.preventDefault();
                 handleSendMessage(inputValue);
               }}
-              className="flex items-end gap-3 max-w-3xl mx-auto"
+              className="flex items-center gap-3 max-w-3xl mx-auto"
             >
               <textarea
                 ref={textareaRef}
-                placeholder={isRtl ? "ما هي أفضل الفرص التطوعية المتعلقة بالفضاء والبيئة للمهندسين في جدة؟" : "What is the best volunteering opportunities related to space and enviroment for engineers, and in Jeddah?"}
+                placeholder={isRtl ?
+                  "ما هي أفضل الفرص التطوعية المتعلقة بالفضاء والبيئة للمهندسين في جدة؟" :
+                  "What is the best volunteering opportunities related to space and enviroment for engineers and in Jeddah?"}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="flex-1 px-4 py-4 rounded-2xl border border-card-border bg-white dark:bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm transition-all resize-none shadow-sm min-h-[60px] max-h-[150px] overflow-y-auto"
+                className="flex-1 px-4 py-4 rounded-2xl border border-card-border bg-white dark:bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm transition-all resize-none shadow-sm min-h-[85px] max-h-[150px] overflow-y-auto"
                 rows={1}
                 dir={isRtl ? "rtl" : "ltr"}
               />
