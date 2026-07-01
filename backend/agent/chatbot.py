@@ -7,10 +7,9 @@ class OpportunityChatbotAsync:
 
     def __init__(self) -> None:
         self.graph = build_graph()
-        self.result = {}
 
     async def chat(self, user_input: str) -> Dict[str, Any]:
-        self.result: AgentState = {
+        self.state: AgentState = {
             "messages": [HumanMessage(content=user_input)],
             "original_query": None,
             "user_query": user_input,
@@ -23,12 +22,12 @@ class OpportunityChatbotAsync:
             "original_suggestions": [],
             "suggestions": [],
         }
-        self.result = await self.graph.ainvoke(self.result)
+        self.state = await self.graph.ainvoke(self.state)
         return {
-            "response": self.result.get("final_response", ""),
-            "suggestions": self.result.get("suggestions", []),
-            "language": self.result.get("language", ""),
-            "used_rag": bool(self.result.get("needs_rag")),
-            "rag_ids": self.result.get("rag_ids", []),
-            "search_filters": self.result.get("search_filters", {}),
+            "response": self.state.get("final_response", ""),
+            "suggestions": self.state.get("suggestions", []),
+            "language": self.state.get("language", ""),
+            "used_rag": bool(self.state.get("needs_rag")),
+            "rag_ids": self.state.get("rag_ids", []),
+            "search_filters": self.state.get("search_filters", {}),
         }

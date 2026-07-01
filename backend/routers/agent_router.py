@@ -1,3 +1,4 @@
+import pprint
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -23,6 +24,10 @@ async def query_agent(request: ChatRequest, db: Session = Depends(get_db)) -> Ch
     try:
         agent = OpportunityChatbotAsync()
         result = await agent.chat(request.message)
+
+        print("\n\nAGENT STATE:\n")
+        print(agent.state)
+        print("\n")
 
         opportunities = []
         if result["used_rag"] and result["rag_ids"]:

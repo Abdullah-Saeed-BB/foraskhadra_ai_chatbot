@@ -343,11 +343,15 @@ def translator_node(state: AgentState) -> Dict[str, any]:
         ("human", "English Output: {en_response}")
     ])
     for i in range(len(lst_fresponse)):
-        chain = prompt | trans_llm
-        response = chain.invoke({
-            "en_response": lst_fresponse[i]
-        })
-        lst_fresponse[i] = response.content
+        fres = lst_fresponse[i]
+        if len(fres) > 2:
+            chain = prompt | trans_llm
+            response = chain.invoke({
+                "en_response": fres
+            })
+            lst_fresponse[i] = response.content
+        else:
+            lst_fresponse[i] = ""
     trans_response = "<|DATA|>".join(lst_fresponse)
 
     suggestions = state["suggestions"]
