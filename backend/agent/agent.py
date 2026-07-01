@@ -39,7 +39,7 @@ class SearchFilters(BaseModel):
     """Structured metadata filters extracted from a user query"""
     location: Optional[str] = Field(
         None, 
-        description="The specific city or country mentioned in the query. Leave None if no city or country is mentioned."
+        description="The specific city or country mentioned in the query. Leave None if no city or country is mentioned. Map inputs like 'UAE' to 'United Arab Emirates', 'KSA' to 'Saudi Arabia', etc."
     )
     category: Optional[OpportunityCategory] = Field(
         None, 
@@ -144,8 +144,9 @@ def router_node(state: AgentState) -> Dict[str, Any]:
         SystemMessage(
             content=(
                 "You are an intent classifier. Respond with ONLY 'yes' if the user "
-                "is looking for job opportunities, positions, vacancies or careers "
-                "at the organization. Otherwise respond with ONLY 'no'."
+                "is looking for any kind of opportunities or interest of something "
+                "like job, course, event, training, internship, scholarship, "
+                "volunteering, hackathon and etc. Otherwise respond with ONLY 'no'."
             )
         ),
         HumanMessage(content=state["user_query"]),
@@ -162,7 +163,7 @@ def query_analyzer_node(state: AgentState) -> Dict[str, Any]:
     
     system_prompt = (
         "You are an expert search assistant. Extract metadata filters from the user query. "
-        "If a specific country, city, or category (e.g. Internship, job, volunteering, etc) is requested, extract it. If it is not mentioned, leave it blank."
+        "If a specific country, city, or category (e.g. Internship, volunteering, etc) is requested, extract it. If it is not mentioned, leave it blank."
     )
     
     prompt = ChatPromptTemplate.from_messages([
@@ -189,7 +190,7 @@ def rag_retriever_node(state: AgentState) -> Dict[str, Any]:
     if "location" in filters:
         chroma_filter.append(
             {"$or": [
-                {"country": filters["location"].lower()},
+                {"country": {"$contains": filters["location"].lower()}},
                 {"city": filters["location"].lower()},
             ]}
         )
@@ -246,15 +247,20 @@ def db_formatter_node(state: AgentState) -> Dict[str, Any]:
 
     placeholders = ", ".join(f":p{i}" for i in range(len(rag_ids)))
     params = {f"p{i}": rid for i, rid in enumerate(rag_ids)}
-    sql = text(f"SELECT id, title_en, tags_en FROM opportunities WHERE id IN ({placeholders})")
+    sql = text(f"\
+        SELECT id, title_en, organization_en, tags_en, benefits_en\
+        FROM opportunities WHERE id IN ({placeholders})")
     engine = get_db_engine()
     with engine.connect() as conn:
         result = conn.execute(sql, params)
-        rows = result.fetchall()
+        rows = result.mappings().fetchall()
 
     formatted_context = ""
-    for row in rows:
-        formatted_context += f"Opportunitiy #{row[0]}\n - Title: {row[1]}\n - Tags: {row[2]}\n\n"
+    for i, row in enumerate(rows):
+        if len(rows) > 3:
+            formatted_context += f"Opportunity {i+1}\n - Title: {row['title_en']}\n - Tags: {row['tags_en']}\n\n"
+        else:
+            formatted_context += f"Opportunity {i+1}\n - Title: {row['title_en']} by {row['organization_en']}\n - Tags: {row['tags_en']}\n - Benefits: {row['benefits_en']}\n\n"
 
     system_message = (
         "You are a friendly, professional assistant helping users find career and educational opportunities. "

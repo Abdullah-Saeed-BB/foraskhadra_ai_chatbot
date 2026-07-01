@@ -62,16 +62,16 @@ const BotMessage = ({msg, isRtl, setInputValue}: {msg: Message, isRtl: boolean, 
           </ReactMarkdown>
         </div>;
       })}
-      <div className="mt-4 mb-10">
-        {msg.suggestions && msg.suggestions.length > 0 && (
+      {msg.suggestions && msg.suggestions.length > 0 && 
+        <div className="mt-4 mb-10">
           <div className="flex flex-col gap-2">
             <span className="text-sm text-foreground/70">{isRtl ? "اقتراحات:" : "Suggestions:"}</span>
             {msg.suggestions.map((suggestion, idx) => (
               <button key={idx} onClick={() => setInputValue(suggestion)} className="text-sm text-slate-50 py-1 px-3 w-fit rounded-2xl shadow-sm bg-primary/80 hover:bg-primary/70">{suggestion}</button>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      }
       {/* <hr/>
       <code>
         {JSON.stringify(msg, null, 2)}

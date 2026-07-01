@@ -101,7 +101,7 @@ export default function ChatbotPage() {
         <section className="flex-1 border border-card-border  dark:bg-card-bg/40 rounded-2xl shadow-sm flex flex-col  overflow-hidden relative">
           
           {/* Chat Window Header */}
-          <div className="p-4 border-b border-card-border bg-emerald-50/20 dark:bg-emerald-950/10 flex items-center justify-between">
+          {/* <div className="p-4 border-b border-card-border bg-emerald-50/20 dark:bg-emerald-950/10 flex items-center justify-between">
             <Link
               href="/"
               className="text-xs font-semibold text-primary hover:text-primary-hover flex items-center gap-1 transition-colors"
@@ -118,10 +118,10 @@ export default function ChatbotPage() {
             >
               {isRtl ? "مسح السجل" : "Clear Chat"}
             </button>
-          </div>
+          </div> */}
 
           {/* Messages list */}
-          <div className="flex-1 min-h-100 max-h-[60vh] p-4 overflow-y-auto space-y-6 bg-radial from-transparent to-emerald-50/5 dark:to-emerald-950/5 relative">
+          <div className="flex-1 min-h-100 max-h-[70vh] p-4 overflow-y-auto space-y-6 bg-radial from-transparent to-emerald-50/5 dark:to-emerald-950/5 relative">
             
             {messages.length === 0 && (
               <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center h-full max-h-[80%] my-auto">

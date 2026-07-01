@@ -1,2 +1,0 @@
-You are an AI assistant powered by LangGraph and LangChain.
-Your goal is to help users by answering questions and completing tasks based on your capabilities.

@@ -37,7 +37,7 @@ async def query_agent(request: ChatRequest, db: Session = Depends(get_db)) -> Ch
                 "description": row.description_en if isEn else row.description_ar,
                 "category": row.category.value,
                 "organization": row.organization_en if isEn else row.organization_ar,
-                "location": row.organization_en if isEn else row.organization_ar,
+                "location": row.location_en if isEn else row.location_ar,
                 "requirements": row.requirements_en if isEn else row.requirements_ar,
                 "benefits": row.benefits_en if isEn else row.benefits_ar,
                 "application_url": row.application_url,
