@@ -48,6 +48,8 @@ class DocumentData(BaseModel):
     benefits: str
     application_url: str
     tags: str
+    published_at: datetime
+    expires_at: Optional[datetime] = None
 
 class ChatResponse(BaseModel):
     response: str
