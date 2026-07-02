@@ -22,18 +22,26 @@ from db.models import OpportunityCategory
 # Defintions
 # -----------------------------------
 
+# AR:
+# {ori_query: [Arabic], query: [English]}
+# {ori_fr: [English], fr: [Arabic]}
+# 
+# EN:
+# {ori_query: [ ], query: [English]}
+# {ori_fr: [], fr: [English]}
+
 class AgentState(TypedDict, total=False):
-    messages: List[Any]          # conversation messages
-    original_query: Optional[str]
-    user_query: str              # raw user input
+    messages: List[AIMessage | HumanMessage]          # conversation messages
+    ar_query: Optional[str]
+    en_query: str              # raw user input
     search_filters: Dict[str, Any]
     language: str
     needs_rag: bool              # router decision
     rag_ids: List[str]           # IDs returned by ChromaDB
-    original_final_response: Optional[str]        # final answer shown to the user
-    final_response: str        # final answer shown to the user
-    original_suggestions: List[str]       # follow-up prompts from light-LLM
-    suggestions: List[str]       # follow-up prompts from light-LLM
+    ar_final_response: Optional[str]        # final answer shown to the user
+    en_final_response: str       # final answer shown to the user
+    ar_suggestions: List[str]       # follow-up prompts from light-LLM
+    en_suggestions: List[str]       # follow-up prompts from light-LLM
 
 class SearchFilters(BaseModel):
     """Structured metadata filters extracted from a user query"""
@@ -103,7 +111,7 @@ def get_db_engine():
 
 def language_detector_node(state: AgentState) -> Dict[str, Any]:
     """Detect the language of the prompt, and translate it to English if it's not English"""
-    query = state["user_query"]
+    query = state["en_query"]
 
     detector = LanguageDetectorBuilder.from_languages(Language.ENGLISH, Language.ARABIC).build()
 
@@ -126,12 +134,12 @@ def language_detector_node(state: AgentState) -> Dict[str, Any]:
 
         res = chain.invoke({"ar_prompt": query})
 
-        return {"language": language, "original_query": query, "user_query": res.content}
-    return {"language": language, "original_query": query}
+        return {"language": language, "ar_query": query, "en_query": res.content}
+    return {"language": language, "en_query": query}
 
 def router_node(state: AgentState) -> Dict[str, Any]:
     """Decide whether the user is looking for opportunities (RAG path)."""
-    query = state["user_query"].lower()
+    query = state["en_query"].lower()
 
     # Fast keyword shortcut — saves an LLM call for obvious cases
     opportunity_keywords = {
@@ -153,7 +161,7 @@ def router_node(state: AgentState) -> Dict[str, Any]:
                 "volunteering, hackathon and etc. Otherwise respond with ONLY 'no'."
             )
         ),
-        HumanMessage(content=state["user_query"]),
+        HumanMessage(content=state["en_query"]),
     ])
     needs_rag = "yes" in resp.content.lower()
     return {"needs_rag": needs_rag}
@@ -172,12 +180,12 @@ def query_analyzer_node(state: AgentState) -> Dict[str, Any]:
     
     prompt = ChatPromptTemplate.from_messages([
         ("system", system_prompt),
-        ("human", "{user_query}")
+        ("human", "{en_query}")
     ])
     
     # Run the chain
     chain = prompt | structured_llm
-    extracted: SearchFilters = chain.invoke({"user_query": state["user_query"]})
+    extracted: SearchFilters = chain.invoke({"en_query": state["en_query"]})
     
     # Convert Pydantic object to a clean dict, dropping None values
     filters = {k: v for k, v in extracted.model_dump().items() if v is not None}
@@ -211,7 +219,7 @@ def rag_retriever_node(state: AgentState) -> Dict[str, Any]:
         chroma_filter = {} 
 
     docs = chroma.similarity_search(
-        state["user_query"],
+        state["en_query"],
         k=RAG_TOP_K,
         filter=chroma_filter
     )
@@ -233,7 +241,7 @@ def db_formatter_node(state: AgentState) -> Dict[str, Any]:
     llm = get_main_llm(temp=.4)
 
     rag_ids = state.get("rag_ids") or []
-    query = state.get("user_query")
+    query = state.get("en_query")
 
     if not rag_ids:
         light_llm = get_light_llm(temp=.4)
@@ -241,11 +249,11 @@ def db_formatter_node(state: AgentState) -> Dict[str, Any]:
         fallback_prompt = ChatPromptTemplate.from_messages([
             ("system", "You are a helpful assistant. The user is looking for opportunities, but our database has zero matches. "
                        "Politely inform them that we don't have listings for that specific request right now, and invite them to try another location or category."),
-            ("human", "{user_query}")
+            ("human", "{en_query}")
         ])
         chain = fallback_prompt | light_llm
-        response = chain.invoke({"user_query": query})
-        return {"final_response": response.content}
+        response = chain.invoke({"en_query": query})
+        return {"en_response": response.content}
 
     main_llm = get_main_llm(temp=.4)
 
@@ -266,26 +274,26 @@ def db_formatter_node(state: AgentState) -> Dict[str, Any]:
         else:
             formatted_context += f"Opportunity {i+1}\n - Title: {row['title_en']} by {row['organization_en']}\n - Tags: {row['tags_en']}\n - Benefits: {row['benefits_en']}\n\n"
 
-    system_message = (
+    system_message = SystemMessage(content=(
         "You are a friendly, professional assistant helping users find career and educational opportunities. "
         "Review the retrieved opportunities provided below and answer the user's request in a warm, fluid, human-like paragraph structure. "
         "Do not print a bulleted markdown table or a dry list. Blend the titles and durations naturally into sentences (e.g., 'There are internships in Jeddah, such as the Financial Analysis Internship...'). "
         "Write always \"<|DATA|>\" where the real data section will show up, so I replace is with real data later. " 
         "Keep the tone encouraging, conversational, and directly responsive to their query."
-    )
+    ))
 
     prompt = ChatPromptTemplate.from_messages([
-        ("system", system_message),
-        ("human", "User Query: {user_query}\n\nAvailable Data:\n{context}")
+        ("system", system_message.content),
+        ("human", "User Query: {en_query}\n\nAvailable Data:\n{context}")
     ])
 
     chain = prompt | main_llm
     response = chain.invoke({
-        "user_query": query,
+        "en_query": query,
         "context": formatted_context
     })
 
-    return {"final_response": response.content}
+    return {"en_response": response.content}
 
 def main_llm_node(state: AgentState) -> Dict[str, Any]:
     """Fallback path: let the main LLM answer the user directly."""
@@ -297,9 +305,9 @@ def main_llm_node(state: AgentState) -> Dict[str, Any]:
                 "Answer the user clearly, concisely, and in a friendly tone."
             )
         ),
-        HumanMessage(content=state["user_query"]),
+        HumanMessage(content=state["en_query"]),
     ])
-    return {"final_response": resp.content}
+    return {"en_response": resp.content}
 
 def suggestion_generator_node(state: AgentState) -> Dict[str, Any]:
     """
@@ -317,14 +325,14 @@ def suggestion_generator_node(state: AgentState) -> Dict[str, Any]:
         ),
         HumanMessage(
             content=(
-                f"User asked: {state['user_query'].replace("<|DATA|>", "").replace("<|data|>", "")}\n\n"
-                f"Assistant answered: {state.get('final_response', '')}"
+                f"User asked: {state['en_query'].replace("<|DATA|>", "").replace("<|data|>", "")}\n\n"
+                f"Assistant answered: {state.get('en_response', '')}"
             )
         ),
     ])
 
     suggestions = _parse_json_array(resp.content)
-    return {"suggestions": suggestions}
+    return {"en_suggestions": suggestions}
 
 def _parse_json_array(text: str) -> List[str]:
     """Robustly extract a JSON array of strings from LLM output."""
@@ -339,7 +347,7 @@ def _parse_json_array(text: str) -> List[str]:
 
 def translator_node(state: AgentState) -> Dict[str, any]:
     """Translate the final response to Arabic if user's language is not English"""
-    final_response = state["final_response"]
+    en_response = state["en_response"]
 
     trans_llm = get_translate_llm()
     system_prompt = (
@@ -347,7 +355,7 @@ def translator_node(state: AgentState) -> Dict[str, any]:
         "Do not add anything are not exist on the output text, like 'translation: ...'. "
     )
 
-    lst_fresponse = final_response.split("<|DATA|>")
+    lst_fresponse = en_response.split("<|DATA|>")
     prompt = ChatPromptTemplate.from_messages([
         ("system", system_prompt),
         ("human", "English Output: {en_response}")
@@ -362,13 +370,13 @@ def translator_node(state: AgentState) -> Dict[str, any]:
             lst_fresponse[i] = response.content
         else:
             lst_fresponse[i] = ""
-    trans_response = "<|DATA|>".join(lst_fresponse)
+    ar_response = "<|DATA|>".join(lst_fresponse)
 
 
     trans_llm = get_translate_llm().with_structured_output(
         SuggestionsTranslation
     )
-    suggestions = state["suggestions"]
+    en_suggestions = state["en_suggestions"]
 
     system_prompt = (
         "Translate the suggestions from English to Arabic. "
@@ -378,27 +386,22 @@ def translator_node(state: AgentState) -> Dict[str, any]:
     )
     chain = ChatPromptTemplate.from_messages([
         ("system", system_prompt),
-        ("human", "English suggestions: {suggestions}"),
+        ("human", "English suggestions: {en_suggestions}"),
     ]) | trans_llm
 
-    print("\nChain:", chain)
-    print("\nOriginal Suggestion:", suggestions)
-
     result = chain.invoke({
-        "suggestions": suggestions
+        "en_suggestions": en_suggestions
     })
 
-    print("\nResult:", result)
+    ar_suggestions = result.suggestions
 
-    trans_suggestions = result.suggestions
-
-    print("\nTrans Suggestions:", trans_suggestions)
+    print("\nTrans Suggestions:", ar_suggestions)
 
     return {
-        "original_final_response": final_response,
-        "final_response": trans_response,
-        "original_suggestions": suggestions,
-        "suggestions": trans_suggestions,
+        "en_response": en_response,
+        "ar_response": ar_response,
+        "en_suggestions": en_suggestions,
+        "ar_suggestions": ar_suggestions,
     }
 
 
