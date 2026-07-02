@@ -19,7 +19,7 @@ class OpportunityBase(BaseModel):
     expires_at: Optional[datetime] = None
 
 class OpportunityResponse(OpportunityBase):
-    id: int
+    id: str
     created_at: datetime
     updated_at: datetime
 

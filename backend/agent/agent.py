@@ -378,7 +378,6 @@ def translator_node(state: AgentState) -> Dict[str, any]:
         else:
             lst_fresponse[i] = ""
     ar_response = "<|DATA|>".join(lst_fresponse)
-
     ar_response = ar_response.replace("فوراس خضرة", "فرص خضراء")
 
     trans_llm = get_translate_llm().with_structured_output(
