@@ -12,19 +12,19 @@
 <img width="3424" height="1173" alt="2_opportunity_visuals" src="https://github.com/user-attachments/assets/68b2feaf-64bf-45f3-b5a4-cd2522f1f79e" />
 <br/>
 
-### اقتراحات الأسئلة الذكية (Prompt Suggestions):
+### اقتراحات الأسئلة الذكية (Prompt Suggestions)
 اقتراح أسئلة ديناميكية لإلهام المستخدم ومساعدته في استكشاف المنصة والوصول إلى الفرص المتاحة بسلاسة.
 
 <img width="3424" height="1173" alt="3_smart_suggestions" src="https://github.com/user-attachments/assets/fed5178c-2d4e-4180-9b63-c62ca3424ca7" />
 <br/>
 
-### إدارة كاملة للسياق (Context & Intent Recognition):
+### إدارة كاملة للسياق (Context & Intent Recognition)
 قدرة الوكيل الذكي على فهم سياق المحادثة بالكامل، وتتبع النوايا المترابطة عبر الرسائل السابقة لضمان تدفق طبيعي ومنطقي للحوار.
 
 <img width="3424" height="1173" alt="4_context_awareness" src="https://github.com/user-attachments/assets/54ea9c47-4a6c-4d4a-ac65-d866b44a5ab3" />
 <br/>
 
-### دعم كامل لثنائية اللغة (Bilingual Support):
+### دعم كامل لثنائية اللغة (Bilingual Support)
 فهم ومعالجة الاستفسارات باللغتين العربية والإنجليزية بكفاءة عالية.
 
 <img width="3424" height="1173" alt="5_multi_languages" src="https://github.com/user-attachments/assets/2cd20acd-14ab-43b9-b316-37aae5c7ed14" />
