@@ -97,6 +97,24 @@ def get_chroma() -> Chroma:
 def get_db_engine():
     return create_engine(DATABASE_URL, future=True)
 
+# -----------------------------------
+# Helper functions
+# -----------------------------------
+
+def read_sys_prompt(filename):
+    with open(f"data/{filename}", "r") as f:
+        return f.read()
+
+def _parse_json_array(text: str) -> List[str]:
+    """Robustly extract a JSON array of strings from LLM output."""
+    try:
+        parsed = json.loads(text)
+        if isinstance(parsed, list):
+            return [str(x) for x in parsed]
+    except json.JSONDecodeError:
+        pass
+    # Fallback: pull anything that looks like "..."
+    return re.findall(r'"([^"\n]+)"', text)
 
 # -----------------------------------
 # Nodes
@@ -132,16 +150,16 @@ def language_detector_node(state: AgentState) -> Dict[str, Any]:
 
 def router_node(state: AgentState) -> Dict[str, Any]:
     """Decide whether the user is looking for opportunities (RAG path)."""
-    query = state["en_query"].lower()
+    # query = state["en_query"].lower()
 
-    # Fast keyword shortcut — saves an LLM call for obvious cases
-    opportunity_keywords = {
-        "opportunity", "opportunities", "job", "jobs", "position", "positions",
-        "vacancy", "vacancies", "career", "careers", "opening", "openings",
-        "hiring", "recruit", "role", "roles", "work with you", "join",
-    }
-    if any(kw in query for kw in opportunity_keywords):
-        return {"needs_rag": True}
+    # # Fast keyword shortcut — saves an LLM call for obvious cases
+    # opportunity_keywords = {
+    #     "opportunity", "opportunities", "job", "jobs", "position", "positions",
+    #     "vacancy", "vacancies", "career", "careers", "opening", "openings",
+    #     "hiring", "recruit", "role", "roles", "work with you", "join",
+    # }
+    # if any(kw in query for kw in opportunity_keywords):
+    #     return {"needs_rag": True}
 
     # LLM-based intent classification for ambiguous queries
     light_llm = get_light_llm()
@@ -302,10 +320,7 @@ def main_llm_node(state: AgentState) -> Dict[str, Any]:
     main_llm = get_main_llm()
     resp = main_llm.invoke([
         SystemMessage(
-            content=(
-                "You are a helpful assistant for the organization. "
-                "Answer the user clearly, concisely, and in a friendly tone."
-            )
+            content=read_sys_prompt("main_llm_node_sys_prompt.txt")
         ),
         *state["messages"][:-1],
         HumanMessage(content=state["en_query"]),
@@ -337,17 +352,6 @@ def suggestion_generator_node(state: AgentState) -> Dict[str, Any]:
     suggestions = _parse_json_array(resp.content)
     return {"en_suggestions": suggestions}
 
-def _parse_json_array(text: str) -> List[str]:
-    """Robustly extract a JSON array of strings from LLM output."""
-    try:
-        parsed = json.loads(text)
-        if isinstance(parsed, list):
-            return [str(x) for x in parsed]
-    except json.JSONDecodeError:
-        pass
-    # Fallback: pull anything that looks like "..."
-    return re.findall(r'"([^"\n]+)"', text)
-
 def translator_node(state: AgentState) -> Dict[str, any]:
     """Translate the final response to Arabic if user's language is not English"""
     en_response = state["en_final_response"]
@@ -375,6 +379,7 @@ def translator_node(state: AgentState) -> Dict[str, any]:
             lst_fresponse[i] = ""
     ar_response = "<|DATA|>".join(lst_fresponse)
 
+    ar_response = ar_response.replace("فوراس خضرة", "فرص خضراء")
 
     trans_llm = get_translate_llm().with_structured_output(
         SuggestionsTranslation
