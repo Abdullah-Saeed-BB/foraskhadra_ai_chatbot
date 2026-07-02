@@ -35,13 +35,6 @@ class OpportunityListResponse(BaseModel):
 # class ChatRequest(BaseModel):
 #     message: str = Field(..., min_length=1, max_length=2000,
 #                          description="User's chat message")
-class Message(BaseModel):
-    type: Literal["bot", "human"]
-    content: str
-
-class ChatRequest(BaseModel):
-    messages: List[Message]
-
 class DocumentData(BaseModel):
     id: str
     title: str
@@ -55,6 +48,14 @@ class DocumentData(BaseModel):
     tags: str
     published_at: datetime
     expires_at: Optional[datetime] = None
+
+class Message(BaseModel):
+    type: Literal["bot", "human"]
+    content: str
+    rag_data: Optional[List[DocumentData]]
+
+class ChatRequest(BaseModel):
+    messages: List[Message]
 
 class ChatResponse(BaseModel):
     en_query: str

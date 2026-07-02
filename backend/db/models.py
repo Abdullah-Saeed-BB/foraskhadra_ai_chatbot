@@ -29,7 +29,7 @@ class OpportunityStatus(str, Enum):
 
 class OpportunityCategory(str, Enum):
     JOB = "job"
-    INTERNSHIP = "internship"
+    TRAINING = "training"
     FREELANCE = "freelance"
     VOLUNTEERING = "volunteering"
     SCHOLARSHIP = "scholarship"

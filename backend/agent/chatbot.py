@@ -5,9 +5,19 @@ from db.schemas import Message
 
 def convert_messages_to_langchain_messages(messages: List[Message]) -> List[AIMessage | HumanMessage]:
     # Extract only the content from each message
-    content_list = [
-        HumanMessage(msg.content) if msg.type == "human" else AIMessage(msg.content)
-    for msg in messages]
+    content_list = []
+    for msg in messages:
+        if msg.type == "human":
+            content_list.append(HumanMessage(msg.content))
+        else:
+            content = msg.content
+            if msg.rag_data and content.count("<|DATA|>") > 0:
+                documents = ""
+                for i, data in enumerate(msg.rag_data):
+                    print("RAG data:", msg.rag_data)
+                    documents += f"Opportunity {i + 1}:\n - Title: {data.title}\n - Tags: {data.tags}\n"
+                content = content.replace("<|DATA|>", f"\nData:\n{documents}\n")
+            content_list.append(AIMessage(content))
     
     return content_list
 

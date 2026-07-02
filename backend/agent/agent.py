@@ -150,8 +150,8 @@ def router_node(state: AgentState) -> Dict[str, Any]:
             content=(
                 "You are an intent classifier. Respond with ONLY 'yes' if the user "
                 "is looking for any kind of opportunities or interest of something "
-                "like job, course, event, training, internship, scholarship, "
-                "volunteering, hackathon and etc. Otherwise respond with ONLY 'no'."
+                "like job, course, event, training, scholarship, volunteering, "
+                "hackathon and etc. Otherwise respond with ONLY 'no'."
             )
         ),
         HumanMessage(content=state["en_query"]),
@@ -167,12 +167,13 @@ def query_analyzer_node(state: AgentState) -> Dict[str, Any]:
     structured_llm = llm.with_structured_output(SearchFilters)
     
     system_prompt = (
-        "You are an expert search assistant. Extract metadata filters from the user query. "
+        "You are an expert search assistant. Extract metadata filters from the user queries. "
         "If a specific country, city, or category (e.g. Internship, volunteering, etc) is requested, extract it. If it is not mentioned, leave it blank."
     )
     
     prompt = ChatPromptTemplate.from_messages([
         ("system", system_prompt),
+        *[("human", f"Previous query: {msg.content}") for msg in state["messages"][:-1] if type(msg) == HumanMessage],
         ("human", "{en_query}")
     ])
     
@@ -209,7 +210,7 @@ def rag_retriever_node(state: AgentState) -> Dict[str, Any]:
     elif len(chroma_filter) == 1:
         chroma_filter = chroma_filter[0]
     else:
-        chroma_filter = {} 
+        chroma_filter = None 
 
     docs = chroma.similarity_search(
         state["en_query"],
@@ -231,21 +232,29 @@ def db_formatter_node(state: AgentState) -> Dict[str, Any]:
     Format the retrieved opportunities into a warm, natural conversational response based on data and user prompt.
     Write always "<|DATA|>" act as data section on the response, so I can replace it with the real data.
     """
-    llm = get_main_llm(temp=.4)
-
     rag_ids = state.get("rag_ids") or []
     query = state.get("en_query")
 
     if not rag_ids:
         light_llm = get_light_llm(temp=.4)
 
-        fallback_prompt = ChatPromptTemplate.from_messages([
-            ("system", "You are a helpful assistant. The user is looking for opportunities, but our database has zero matches. "
-                       "Politely inform them that we don't have listings for that specific request right now, and invite them to try another location or category."),
-            ("human", "{en_query}")
-        ])
-        chain = fallback_prompt | light_llm
-        response = chain.invoke({"en_query": query})
+        system_message = SystemMessage(content=(
+            "You are a helpful assistant. The user is looking for opportunities, but our database has zero matches. "
+            "Politely inform them that we don't have listings for that specific request right now, and invite them to try another location or category."
+        ))
+
+        messages = [
+            system_message,
+            *state["messages"][:-1],
+            HumanMessage(content=query)
+        ]
+
+        print("Messages that feeded to the AI agent:")
+        for obj_msg in messages:
+            print("  [(*)]", type(obj_msg), obj_msg.content, end="\n\n")
+
+        
+        response = light_llm.invoke(messages)
         return {"en_final_response": response.content}
 
     main_llm = get_main_llm(temp=.4)
@@ -275,17 +284,17 @@ def db_formatter_node(state: AgentState) -> Dict[str, Any]:
         "Keep the tone encouraging, conversational, and directly responsive to their query."
     ))
 
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", system_message.content),
-        ("human", "User Query: {en_query}\n\nAvailable Data:\n{context}")
-    ])
+    messages = [
+        system_message,
+        *state["messages"][:-1],
+        HumanMessage(content=f"User Query: {state["en_query"]}\n\nAvailable Data:\n{formatted_context}")
+    ]
 
-    chain = prompt | main_llm
-    response = chain.invoke({
-        "en_query": query,
-        "context": formatted_context
-    })
+    print("Messages that feeded to the AI agent:")
+    for obj_msg in messages:
+        print("  [(*)]", type(obj_msg), obj_msg.content, end="\n\n")
 
+    response = main_llm.invoke(messages)
     return {"en_final_response": response.content}
 
 def main_llm_node(state: AgentState) -> Dict[str, Any]:
@@ -298,6 +307,7 @@ def main_llm_node(state: AgentState) -> Dict[str, Any]:
                 "Answer the user clearly, concisely, and in a friendly tone."
             )
         ),
+        *state["messages"][:-1],
         HumanMessage(content=state["en_query"]),
     ])
     return {"en_final_response": resp.content}
@@ -387,8 +397,6 @@ def translator_node(state: AgentState) -> Dict[str, any]:
     })
 
     ar_suggestions = result.suggestions
-
-    print("\nTrans Suggestions:", ar_suggestions)
 
     return {
         "en_final_response": en_response,

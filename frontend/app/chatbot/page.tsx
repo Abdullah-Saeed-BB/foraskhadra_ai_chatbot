@@ -38,7 +38,8 @@ export default function ChatbotPage() {
       const bodyMessages = [...messages, userMsg].map((message:Message) => {
         return {
           "type": message.sender,
-          "content": message.language === "ar" ? message.ar_text : message.en_text,
+          "content": message.en_text,
+          "rag_data": message.ragData || [],
         }
       })
 
@@ -67,7 +68,12 @@ export default function ChatbotPage() {
         ragData: data.used_rag ? data.rag_data : undefined,
         suggestions: data.suggestions,
       };
-      setMessages((prev) => [...prev, botMsg]);
+      
+      userMsg.en_text = data.en_query;
+      userMsg.language = data.language;
+      // userMsg.ar_text = data.ar_query;
+
+      setMessages((prev) => [...prev.slice(0, -1), userMsg, botMsg]);
     } catch (error) {
       console.error("Error communicating with chatbot API:", error);
       const errorMsg: Message = {
@@ -199,6 +205,8 @@ export default function ChatbotPage() {
           </div>
 
         </section>
+
+        <pre>{JSON.stringify(messages, null, 2)}</pre>
 
       </main>
 
