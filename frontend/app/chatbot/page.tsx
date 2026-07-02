@@ -144,10 +144,10 @@ export default function ChatbotPage() {
             {messages.length === 0 && (
               <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center h-full max-h-[80%] my-auto">
                 <div className="w-24 h-24 mb-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center p-3 shadow-inner">
-                  <Image src="/images/bot_logo_t.png" alt={isRtl ? "خبير" : "Khabeer"} width={80} height={80} className="object-contain" />
+                  <Image src="/images/bot_logo_t.png" alt={isRtl ? "خَبِير" : "Khabeer"} width={80} height={80} className="object-contain" />
                 </div>
                 <h2 className="font-extrabold text-3xl text-foreground mb-3">
-                  {isRtl ? "خبير" : "Khabeer"}
+                  {isRtl ? "خَبِير" : "Khabeer"}
                 </h2>
                 <p className="text-sm text-foreground/75 leading-relaxed max-w-md mx-auto">
                   {isRtl
