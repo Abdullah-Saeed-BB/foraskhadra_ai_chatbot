@@ -7,6 +7,7 @@ import rehypeHighlight from "rehype-highlight";
 
 const ChatMessage = ({msg, isRtl, setInputValue}: {msg: Message, isRtl: boolean, setInputValue: (input: string) => void}) => {
   const isBot = msg.sender === "bot";
+  const content = msg.language === "ar" && msg.ar_text ? msg.ar_text: msg.en_text 
   
   return (
     <div
@@ -18,7 +19,7 @@ const ChatMessage = ({msg, isRtl, setInputValue}: {msg: Message, isRtl: boolean,
         {isBot ? (
           <BotMessage msg={msg} isRtl={isRtl} setInputValue={setInputValue}/>
         ) : (
-          <HumanMessage content={msg.text} />
+          <HumanMessage content={content} />
         )}
       </div>
     </div>
@@ -36,14 +37,18 @@ const HumanMessage = ({content}: {content: string}) => {
 }
 
 const BotMessage = ({msg, isRtl, setInputValue}: {msg: Message, isRtl: boolean, setInputValue: (input: string) => void}) => {
-  let content = msg.text.split("<|DATA|>")
-  content = content.flatMap((element, index) => 
+  const content = msg.language === "ar" && msg.ar_text ? msg.ar_text: msg.en_text 
+  console.log(
+    "Content: ", content, "\nmsg: ", msg
+  )
+  let splittedContent = content.split("<|DATA|>")
+  splittedContent = splittedContent.flatMap((element, index) => 
       index === 0 ? element : ["<|DATA|>", element]
   );
 
   return (
     <div className="flex flex-col gap-2 w-full">
-      {content.map((item, index) => {
+      {splittedContent.map((item, index) => {
         if (item === "<|DATA|>") {
           return <div key={index + "_card"} className="my-2 grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
             {

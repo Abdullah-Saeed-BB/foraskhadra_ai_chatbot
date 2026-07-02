@@ -21,9 +21,11 @@ async def query_agent(request: ChatRequest, db: Session = Depends(get_db)) -> Ch
     Validates input with Pydantic (AgentRequest), authenticates, and applies rate limiting via dependencies.
     """
 
+    print("All Messages:\n", request.messages)
+
     try:
         agent = OpportunityChatbotAsync()
-        result = await agent.chat(request.message)
+        result = await agent.chat(request.messages)
 
         print("\nAgent state:\n", agent.state, end="\n\n")
 
@@ -47,7 +49,10 @@ async def query_agent(request: ChatRequest, db: Session = Depends(get_db)) -> Ch
             } for row in rows]
 
         return ChatResponse(
-            response=result["response"],
+            en_query=result["en_query"],
+            ar_query=result["ar_query"],
+            en_response=result["en_response"],
+            ar_response=result["ar_response"],
             suggestions=result["suggestions"],
             language=result["language"],
             used_rag=result["used_rag"],

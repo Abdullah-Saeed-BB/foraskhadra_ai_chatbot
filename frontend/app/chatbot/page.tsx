@@ -22,8 +22,10 @@ export default function ChatbotPage() {
 
     const userMsg: Message = {
       id: Date.now(),
-      sender: "user",
-      text,
+      sender: "human",
+      ar_text: text,
+      en_text: text,
+      language: "unknown",
       timestamp: new Date()
     };
 
@@ -32,15 +34,21 @@ export default function ChatbotPage() {
     setIsTyping(true);
 
     try {
-      // The API URL is loaded from the .env file as requested
+      
+      const bodyMessages = [...messages, userMsg].map((message:Message) => {
+        return {
+          "type": message.sender,
+          "content": message.language === "ar" ? message.ar_text : message.en_text,
+        }
+      })
+
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      console.log(apiUrl);
       const response = await fetch(`${apiUrl}/agent/query`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({ messages: bodyMessages }),
       });
 
       if (!response.ok) {
@@ -48,12 +56,13 @@ export default function ChatbotPage() {
       }
 
       const data = await response.json();
-      console.log(data);
       
       const botMsg: Message = {
         id: Date.now() + 1,
         sender: "bot",
-        text: data.response || (isRtl ? "عذراً، لم أتمكن من معالجة طلبك." : "Sorry, I couldn't process your request."),
+        ar_text: data.ar_response,
+        en_text: data.en_response,
+        language: data.language,
         timestamp: new Date(),
         ragData: data.used_rag ? data.rag_data : undefined,
         suggestions: data.suggestions,
@@ -64,7 +73,9 @@ export default function ChatbotPage() {
       const errorMsg: Message = {
         id: Date.now() + 1,
         sender: "bot",
-        text: isRtl ? "حدث خطأ أثناء الاتصال بالخادم. يرجى المحاولة لاحقاً." : "An error occurred while connecting to the server. Please try again later.",
+        ar_text: "حدث خطأ أثناء الاتصال بالخادم. يرجى المحاولة لاحقاً.",
+        en_text: "An error occurred while connecting to the server. Please try again later.",
+        language: isRtl ? "ar" : "en",
         timestamp: new Date()
       };
       setMessages((prev) => [...prev, errorMsg]);
@@ -95,10 +106,10 @@ export default function ChatbotPage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8 flex flex-col gap-6">
+      <main className="flex-1 max-w-5xl w-full mx-auto px-2 py-2 flex flex-col gap-6">
         
         {/* Chat Window */}
-        <section className="flex-1 border border-card-border  dark:bg-card-bg/40 rounded-2xl shadow-sm flex flex-col  overflow-hidden relative">
+        <section className="flex-1 flex flex-col overflow-hidden relative">
           
           {/* Chat Window Header */}
           {/* <div className="p-4 border-b border-card-border bg-emerald-50/20 dark:bg-emerald-950/10 flex items-center justify-between">
@@ -163,7 +174,7 @@ export default function ChatbotPage() {
                 e.preventDefault();
                 handleSendMessage(inputValue);
               }}
-              className="flex items-center gap-3 max-w-3xl mx-auto"
+              className="flex items-center gap-3 max-w-4xl mx-auto"
             >
               <textarea
                 ref={textareaRef}

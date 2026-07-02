@@ -15,8 +15,10 @@ export interface DocumentData {
 
 export interface Message {
   id: number;
-  sender: "user" | "bot";
-  text: string;
+  sender: "human" | "bot";
+  ar_text?: string;
+  en_text: string;
+  language: "ar" | "en" | "unknown";
   timestamp: Date;
   ragData?: DocumentData[];
   suggestions?: string[];

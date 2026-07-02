@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Literal
 from pydantic import BaseModel, Field
 
 from typing import Optional, List
@@ -32,10 +32,15 @@ class OpportunityListResponse(BaseModel):
     limit: int
 
 
-class ChatRequest(BaseModel):
-    message: str = Field(..., min_length=1, max_length=2000,
-                         description="User's chat message")
+# class ChatRequest(BaseModel):
+#     message: str = Field(..., min_length=1, max_length=2000,
+#                          description="User's chat message")
+class Message(BaseModel):
+    type: Literal["bot", "human"]
+    content: str
 
+class ChatRequest(BaseModel):
+    messages: List[Message]
 
 class DocumentData(BaseModel):
     id: str
@@ -52,7 +57,10 @@ class DocumentData(BaseModel):
     expires_at: Optional[datetime] = None
 
 class ChatResponse(BaseModel):
-    response: str
+    en_query: str
+    ar_query: Optional[str]
+    en_response: str
+    ar_response: Optional[str]
     suggestions: List[str]
     language: str
     used_rag: bool

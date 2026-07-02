@@ -32,7 +32,6 @@ class OpportunityCategory(str, Enum):
     INTERNSHIP = "internship"
     FREELANCE = "freelance"
     VOLUNTEERING = "volunteering"
-    TRAINING = "training"
     SCHOLARSHIP = "scholarship"
     COMPETITION = "competition"
     HACKATHON = "hackathon"

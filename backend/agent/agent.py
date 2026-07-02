@@ -22,13 +22,6 @@ from db.models import OpportunityCategory
 # Defintions
 # -----------------------------------
 
-# AR:
-# {ori_query: [Arabic], query: [English]}
-# {ori_fr: [English], fr: [Arabic]}
-# 
-# EN:
-# {ori_query: [ ], query: [English]}
-# {ori_fr: [], fr: [English]}
 
 class AgentState(TypedDict, total=False):
     messages: List[AIMessage | HumanMessage]          # conversation messages
@@ -40,7 +33,7 @@ class AgentState(TypedDict, total=False):
     rag_ids: List[str]           # IDs returned by ChromaDB
     ar_final_response: Optional[str]        # final answer shown to the user
     en_final_response: str       # final answer shown to the user
-    ar_suggestions: List[str]       # follow-up prompts from light-LLM
+    ar_suggestions: Optional[List[str]]       # follow-up prompts from light-LLM
     en_suggestions: List[str]       # follow-up prompts from light-LLM
 
 class SearchFilters(BaseModel):
@@ -253,7 +246,7 @@ def db_formatter_node(state: AgentState) -> Dict[str, Any]:
         ])
         chain = fallback_prompt | light_llm
         response = chain.invoke({"en_query": query})
-        return {"en_response": response.content}
+        return {"en_final_response": response.content}
 
     main_llm = get_main_llm(temp=.4)
 
@@ -293,7 +286,7 @@ def db_formatter_node(state: AgentState) -> Dict[str, Any]:
         "context": formatted_context
     })
 
-    return {"en_response": response.content}
+    return {"en_final_response": response.content}
 
 def main_llm_node(state: AgentState) -> Dict[str, Any]:
     """Fallback path: let the main LLM answer the user directly."""
@@ -307,7 +300,7 @@ def main_llm_node(state: AgentState) -> Dict[str, Any]:
         ),
         HumanMessage(content=state["en_query"]),
     ])
-    return {"en_response": resp.content}
+    return {"en_final_response": resp.content}
 
 def suggestion_generator_node(state: AgentState) -> Dict[str, Any]:
     """
@@ -347,7 +340,7 @@ def _parse_json_array(text: str) -> List[str]:
 
 def translator_node(state: AgentState) -> Dict[str, any]:
     """Translate the final response to Arabic if user's language is not English"""
-    en_response = state["en_response"]
+    en_response = state["en_final_response"]
 
     trans_llm = get_translate_llm()
     system_prompt = (
@@ -398,8 +391,8 @@ def translator_node(state: AgentState) -> Dict[str, any]:
     print("\nTrans Suggestions:", ar_suggestions)
 
     return {
-        "en_response": en_response,
-        "ar_response": ar_response,
+        "en_final_response": en_response,
+        "ar_final_response": ar_response,
         "en_suggestions": en_suggestions,
         "ar_suggestions": ar_suggestions,
     }

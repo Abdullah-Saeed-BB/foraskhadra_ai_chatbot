@@ -9,8 +9,7 @@ def convert_messages_to_langchain_messages(messages: List[Message]) -> List[AIMe
         HumanMessage(msg.content) if msg.type == "human" else AIMessage(msg.content)
     for msg in messages]
     
-    # Join with newlines to preserve conversation flow
-    return "\n".join(content_list)
+    return content_list
 
 class OpportunityChatbotAsync:
     """High-level wrapper around the compiled LangGraph agent."""
@@ -24,16 +23,16 @@ class OpportunityChatbotAsync:
 
         self.state: AgentState = {
             "messages": parsed_messages,
-            "original_query": None,
-            "user_query": user_input,
+            "ar_query": None,
+            "en_query": user_input,
             "search_filters": {},
             "language": "",
             "needs_rag": False,
             "rag_ids": [],
-            "original_final_response": None,
-            "final_response": "",
-            "original_suggestions": [],
-            "suggestions": [],
+            "ar_final_response": None,
+            "en_final_response": "",
+            "en_suggestions": [],
+            "ar_suggestions": [],
         }
         self.state = await self.graph.ainvoke(self.state)
         lan = self.state.get("language", "en")
