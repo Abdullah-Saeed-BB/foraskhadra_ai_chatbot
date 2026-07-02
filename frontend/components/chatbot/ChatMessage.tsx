@@ -4,6 +4,7 @@ import OpportunityCard from './OpportunityCard';
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
+import Link from 'next/link';
 
 const ChatMessage = ({msg, isRtl, setInputValue}: {msg: Message, isRtl: boolean, setInputValue: (input: string) => void}) => {
   const isBot = msg.sender === "bot";
@@ -50,12 +51,36 @@ const BotMessage = ({msg, isRtl, setInputValue}: {msg: Message, isRtl: boolean, 
     <div className="flex flex-col gap-2 w-full">
       {splittedContent.map((item, index) => {
         if (item === "<|DATA|>") {
-          return <div key={index + "_card"} className="my-2 grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
-            {
-              msg.ragData && msg.ragData.length > 0 && msg.ragData.map((doc, idx) => (
-                <OpportunityCard key={idx + "_oppo"} doc={doc} isRtl={isRtl}/>
-              ))
+          const params = new URLSearchParams();
+          if (msg.search_filters) {
+            if (msg.search_filters.category) {
+              params.append("category", msg.search_filters.category);
             }
+            if (msg.search_filters.location) {
+              params.append("filter_search", msg.search_filters.location);
+            }
+          }
+          const viewMoreUrl = `/opportunities?${params.toString()}`;
+
+          return <div key={index + "_card"} className="my-2 flex flex-col gap-3 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
+              {
+                msg.ragData && msg.ragData.length > 0 && msg.ragData.map((doc, idx) => (
+                  <OpportunityCard key={idx + "_oppo"} doc={doc} isRtl={isRtl}/>
+                ))
+              }
+            </div>
+            <div className="flex justify-center w-full mt-1">
+              <Link
+                href={viewMoreUrl}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-primary bg-primary/10 hover:bg-primary/20 transition-all shadow-sm hover:shadow-md cursor-pointer border border-primary/20"
+              >
+                <span>{isRtl ? "عرض المزيد من الفرص" : "View more opportunities"}</span>
+                <span className="text-xs transition-transform group-hover:translate-x-1 duration-200">
+                  {isRtl ? "←" : "→"}
+                </span>
+              </Link>
+            </div>
           </div>;
         }
         return <div key={index} className='text-sm whitespace-pre-wrap leading-relaxed text-foreground py-2'>
@@ -77,10 +102,6 @@ const BotMessage = ({msg, isRtl, setInputValue}: {msg: Message, isRtl: boolean, 
           </div>
         </div>
       }
-      {/* <hr/>
-      <code>
-        {JSON.stringify(msg, null, 2)}
-      </code> */}
     </div>
   )
 }

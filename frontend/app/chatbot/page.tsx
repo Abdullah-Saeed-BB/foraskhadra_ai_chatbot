@@ -67,6 +67,7 @@ export default function ChatbotPage() {
         timestamp: new Date(),
         ragData: data.used_rag ? data.rag_data : undefined,
         suggestions: data.suggestions,
+        search_filters: data.search_filters,
       };
       
       userMsg.en_text = data.en_query;
@@ -203,11 +204,7 @@ export default function ChatbotPage() {
               </button>
             </form>
           </div>
-
         </section>
-
-        <pre>{JSON.stringify(messages, null, 2)}</pre>
-
       </main>
 
       <Footer />

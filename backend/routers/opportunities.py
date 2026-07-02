@@ -36,6 +36,7 @@ def get_opportunities(
     category: Optional[OpportunityCategory] = None,
     country: Optional[str] = None,
     city: Optional[str] = None,
+    filter_search: Optional[str] = None,
     skip: int = Query(0, ge=0),
     limit: int = Query(10, ge=1, le=100),
     db: Session = Depends(get_db)
@@ -44,6 +45,15 @@ def get_opportunities(
     
     if category:
         query = query.filter(Opportunity.category == category)
+        
+    if filter_search:
+        search_term = f"%{filter_search}%"
+        query = query.filter(
+            or_(
+                Opportunity.location_en.ilike(search_term),
+                Opportunity.location_ar.ilike(search_term)
+            )
+        )
         
     if country:
         search_term = f"%{country}%"

@@ -22,4 +22,8 @@ export interface Message {
   timestamp: Date;
   ragData?: DocumentData[];
   suggestions?: string[];
+  search_filters?: {
+    category?: string;
+    location?: string;
+  };
 }

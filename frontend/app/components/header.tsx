@@ -23,7 +23,7 @@ export const Header: React.FC = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-card-border bg-background/95 backdrop-blur-md transition-all">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-20 items-center justify-between gap-4">
+        <div className="flex h-16 items-center justify-between gap-4">
           
           {/* Logo Section */}
           <div className="flex items-center">
@@ -41,46 +41,14 @@ export const Header: React.FC = () => {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-6 xl:gap-8 text-[15px] font-medium">
-            <Link href="/" className="hover:text-primary transition-colors text-primary">
+            <Link href="/" className="hover:text-primary transition-colors text-ring/5">
               {t.home}
             </Link>
             
             {/* Opportunities Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setOppDropdownOpen(!oppDropdownOpen)}
-                onBlur={() => setTimeout(() => setOppDropdownOpen(false), 200)}
-                className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
-              >
-                {t.allOpportunities}
-                <svg
-                  className={`h-4 w-4 transition-transform duration-200 ${oppDropdownOpen ? "rotate-180" : ""}`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-
-              {oppDropdownOpen && (
-                <div
-                  className={`absolute mt-2 w-56 rounded-xl border border-card-border bg-white p-2 shadow-xl ring-1 ring-black/5 transition-all animate-in fade-in slide-in-from-top-1 ${
-                    isRtl ? "right-0" : "left-0"
-                  }`}
-                >
-                  {opportunitiesMenu.map((item, idx) => (
-                    <Link
-                      key={idx}
-                      href={item.href}
-                      className="block rounded-lg px-4 py-2 text-sm text-foreground hover:bg-emerald-50 hover:text-primary transition-colors"
-                    >
-                      {item.title}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
+            <Link href="/opportunities" className="hover:text-primary transition-colors text-ring/5">
+              {t.allOpportunities}
+            </Link>
             
             {/* AI Chatbot Link in Nav */}
             <Link href="/chatbot" className="flex items-center gap-2 hover:text-primary transition-colors font-semibold text-primary">
