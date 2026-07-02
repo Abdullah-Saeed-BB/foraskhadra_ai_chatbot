@@ -185,14 +185,14 @@ def query_analyzer_node(state: AgentState) -> Dict[str, Any]:
     structured_llm = llm.with_structured_output(SearchFilters)
     
     system_prompt = (
-        "You are an expert search assistant. Extract metadata filters from the user queries. "
+        "You are an expert search assistant. Extract metadata filters from the user queries, and the priority goes to Current query. "
         "If a specific country, city, or category (e.g. Internship, volunteering, etc) is requested, extract it. If it is not mentioned, leave it blank."
     )
     
     prompt = ChatPromptTemplate.from_messages([
         ("system", system_prompt),
         *[("human", f"Previous query: {msg.content}") for msg in state["messages"][:-1] if type(msg) == HumanMessage],
-        ("human", "{en_query}")
+        ("human", "Current query: {en_query}")
     ])
     
     # Run the chain

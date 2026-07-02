@@ -45,6 +45,9 @@ class OpportunityChatbotAsync:
             "ar_suggestions": [],
         }
         self.state = await self.graph.ainvoke(self.state)
+
+        print("Search Filter:", self.state.get("search_filters", {}))
+
         lan = self.state.get("language", "en")
         return {
             "en_query": self.state.get("en_query", ""),
