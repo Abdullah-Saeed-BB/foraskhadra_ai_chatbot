@@ -46,6 +46,10 @@ class SearchFilters(BaseModel):
         description="The specific category mentioned in the query. Leave None if no category is mentioned."
     )
 
+class SuggestionsTranslation(BaseModel):
+    suggestions: List[str] = Field(
+        description="The translated suggestions in the same order as the input."
+    )
 
 # -----------------------------------
 # Componenst
@@ -360,25 +364,41 @@ def translator_node(state: AgentState) -> Dict[str, any]:
             lst_fresponse[i] = ""
     trans_response = "<|DATA|>".join(lst_fresponse)
 
+
+    trans_llm = get_translate_llm().with_structured_output(
+        SuggestionsTranslation
+    )
     suggestions = state["suggestions"]
 
     system_prompt = (
         "Translate the suggestions from English to Arabic. "
         "Do not add anything are not exist on the output text, like 'translation: ...'. "
-        "Return ONLY a JSON array of strings, e.g. [\"q1\", \"q2\", \"q3\"]"
+        "Keep the same number of suggestions and keep the same order. "
+        "Do not merge, remove, or create new suggestions."
     )
     chain = ChatPromptTemplate.from_messages([
         ("system", system_prompt),
         ("human", "English suggestions: {suggestions}"),
     ]) | trans_llm
-    suggestions_trans = chain.invoke({"suggestions": suggestions})
-    parse_suggestions = _parse_json_array(suggestions_trans.content)
+
+    print("\nChain:", chain)
+    print("\nOriginal Suggestion:", suggestions)
+
+    result = chain.invoke({
+        "suggestions": suggestions
+    })
+
+    print("\nResult:", result)
+
+    trans_suggestions = result.suggestions
+
+    print("\nTrans Suggestions:", trans_suggestions)
 
     return {
         "original_final_response": final_response,
         "final_response": trans_response,
         "original_suggestions": suggestions,
-        "suggestions": parse_suggestions,
+        "suggestions": trans_suggestions,
     }
 
 
